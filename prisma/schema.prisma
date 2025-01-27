@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Role {
+  id_role      Int           @id @default(autoincrement())
+  nom_role     String        @unique
+  utilisateurs Utilisateur[]
+}
+
+model Utilisateur {
+  id_utilisateur Int        @id @default(autoincrement())
+  nom            String
+  prenom         String
+  email          String     @unique
+  id_role        Int
+  supabase_id    String     @unique @db.Uuid
+  commandes      Commande[]
+  role           Role       @relation(fields: [id_role], references: [id_role])
+}
+
+model Stock {
+  id_stock            Int               @id @default(autoincrement())
+  nom                 String
+  description         String
+  quantite_disponible Int
+  id_type_stock       BigInt
+  details_commande    DetailsCommande[]
+  mouvements          Mouvement[]
+  TypeStock           TypeStock         @relation(fields: [id_type_stock], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Commande {
+  id_commande      Int               @id @default(autoincrement())
+  id_utilisateur   Int
+  date_commande    DateTime          @default(now())
+  statut           String            @default("en_attente")
+  utilisateur      Utilisateur       @relation(fields: [id_utilisateur], references: [id_utilisateur])
+  details_commande DetailsCommande[]
+  mouvements       Mouvement[]
+}
+
+model DetailsCommande {
+  id_commande Int
+  id_stock    Int
+  quantite    Int
+  commande    Commande @relation(fields: [id_commande], references: [id_commande])
+  stock       Stock    @relation(fields: [id_stock], references: [id_stock])
+
+  @@id([id_commande, id_stock])
+}
+
+model Mouvement {
+  id_mouvement   Int      @id @default(autoincrement())
+  id_stock       Int
+  type_mouvement String
+  quantite       Int
+  date_mouvement DateTime @default(now())
+  id_commande    Int
+  commande       Commande @relation(fields: [id_commande], references: [id_commande])
+  stock          Stock    @relation(fields: [id_stock], references: [id_stock])
+}
+
+model TypeStock {
+  id       BigInt  @id @default(autoincrement())
+  nom_type String? @db.VarChar
+  Stock    Stock[]
+}
