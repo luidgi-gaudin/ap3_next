@@ -1,5 +1,5 @@
 import * as React from "react"
-import { NavUser } from "@/components/dashboard/nav-user"
+import { NavUser } from "@/components/dashboard/layout/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -12,8 +12,7 @@ import {
 import {createClient} from "@/utils/supabase/server";
 import {redirect} from "next/navigation";
 import UtilisateurService from "@/services/utilisateurService";
-import {DashboardLinkButton} from "@/components/dashboard/dashboardLinkButton";
-
+import {DashboardLinkButton} from "@/components/dashboard/layout/dashboardLinkButton";
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 

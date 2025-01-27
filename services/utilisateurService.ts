@@ -1,5 +1,4 @@
 import {prisma} from "@/lib/prisma";
-import {Prisma} from "@prisma/client";
 
 class UtilisateurService {
     // Créer un utilisateur
@@ -15,12 +14,6 @@ class UtilisateurService {
         });
     }
 
-    // Obtenir un utilisateur par ID
-    async getUtilisateurById(id: number) {
-        return prisma.utilisateur.findUnique({
-            where: {id},
-        });
-    }
 
     async getUtilisateurBySupabaseId(supabase_id: string) {
         return prisma.utilisateur.findUnique({
@@ -28,25 +21,6 @@ class UtilisateurService {
         });
     }
 
-    // Obtenir tous les utilisateurs
-    async GetAllUtilisateur() {
-        return prisma.utilisateur.findMany();
-    }
-
-    // Mettre à jour un utilisateur
-    async UpdateUtilisateur(id: number, updates: Prisma.UtilisateurUpdateInput) {
-        return prisma.utilisateur.update({
-            where: {id},
-            data: updates,
-        });
-    }
-
-    // Supprimer un utilisateur
-    async DeleteUtilisateur(id: number) {
-        return prisma.utilisateur.delete({
-            where: {id},
-        });
-    }
 }
 
 export default new UtilisateurService();

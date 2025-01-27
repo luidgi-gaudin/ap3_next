@@ -1,6 +1,6 @@
 'use client'
 import React from "react";
-import { usePathname } from "next/navigation"; // Pour obtenir le chemin actuel
+import { usePathname } from "next/navigation";
 import {
     SidebarTrigger,
 } from "@/components/ui/sidebar";

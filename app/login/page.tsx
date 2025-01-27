@@ -264,8 +264,8 @@ export default function AuthPage() {
                 const data: Role[] = await response.json();
                 setRoles(data);
                 setRolesError(null);
-            } catch (error: any) {
-                setRolesError(`Erreur lors du chargement des rôles: ${error.message}`);
+            } catch {
+                setRolesError(`Erreur lors du chargement des rôles`);
             } finally {
                 setIsLoadingRole(false);
             }
