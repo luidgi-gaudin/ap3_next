@@ -5,12 +5,12 @@ import HeaderUser from "@/components/dashboard/layout/header";
 
 export default function LayoutUser({ children }: { children: React.ReactNode }) {
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <HeaderUser />
-                {children}
-            </SidebarInset>
-        </SidebarProvider>
+            <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                    <HeaderUser />
+                    {children}
+                </SidebarInset>
+            </SidebarProvider>
     )
 }

@@ -13,6 +13,9 @@ import {createClient} from "@/utils/supabase/server";
 import {redirect} from "next/navigation";
 import UtilisateurService from "@/services/utilisateurService";
 import {DashboardLinkButton} from "@/components/dashboard/layout/dashboardLinkButton";
+import {NavigationButton} from "@/components/dashboard/layout/navigationButton";
+
+import { Package, ClipboardList } from "lucide-react";
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
@@ -40,6 +43,16 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        <NavigationButton
+            path="/orders"
+            label="Commandes"
+            icon={<ClipboardList className="w-4 h-4" />}
+        />
+        <NavigationButton
+            path="/stock"
+            label="Stock"
+            icon={<Package className="w-4 h-4" />}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

@@ -20,6 +20,17 @@ class UtilisateurService {
             where: { supabase_id },
         });
     }
+    async updateUtilisateurBySupabaseId(supabaseId: string, data: { prenom: string; nom: string }) {
+        try {
+            return await prisma.utilisateur.update({
+                where: { supabase_id: supabaseId },
+                data,
+            });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour de l'utilisateur :", error);
+            throw new Error("Impossible de mettre à jour l'utilisateur.");
+        }
+    }
 
 }
 

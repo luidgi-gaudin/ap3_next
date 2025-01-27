@@ -84,13 +84,9 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => redirectTo('/account')}>
+              <DropdownMenuItem onClick={() => redirectTo('/dashboard/account')}>
                 <BadgeCheck />
                 Compte
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => redirectTo('/settings')}>
-                <Settings />
-                Paramètres
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
