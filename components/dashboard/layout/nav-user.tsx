@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation"
 
 import {
   BadgeCheck,
-  Settings,
   ChevronsUpDown,
   LogOut,
 } from "lucide-react"
