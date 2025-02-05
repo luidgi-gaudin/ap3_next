@@ -33,6 +33,7 @@ export default function RootLayout({
         <ThemeProvider
             attribute="class"
             disableTransitionOnChange
+            defaultTheme="light"
         >
             {children}
             <Toaster />

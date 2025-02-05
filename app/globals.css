@@ -5,6 +5,9 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+.skeletton-dashboard{
+  width: 70vw;
+}
 
 @layer base {
   :root {

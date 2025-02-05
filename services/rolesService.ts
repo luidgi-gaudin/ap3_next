@@ -1,15 +1,16 @@
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma"
 
 class RolesService {
-    async GetAllRoles() {
+    static async GetAllRoles() {
         try {
             const roles = await prisma.role.findMany();
-            console.log("Rôles depuis la base Prisma :", roles);
-            return roles;
+            console.log("Rôles récupérés :", roles);
+            return roles ?? [];
         } catch (error) {
-            throw new Error("Failed to fetch roles");
+            console.error("Erreur dans RolesService.GetAllRoles :", error);
+            throw error;
         }
     }
 }
 
-export default new RolesService();
+export default RolesService;
