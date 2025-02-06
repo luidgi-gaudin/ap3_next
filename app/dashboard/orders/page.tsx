@@ -50,9 +50,9 @@ export default function OrderPage() {
                 return "bg-blue-500";
             case "expédié":
                 return "bg-green-500";
-            case "terminé":
+            case "terminée":
                 return "bg-gray-500";
-            case "annulé":
+            case "annulée":
                 return "bg-red-500";
             default:
                 return "bg-gray-500";

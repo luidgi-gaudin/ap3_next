@@ -147,11 +147,11 @@ export default function DashboardPage() {
                 return "bg-yellow-500";
             case "en préparation":
                 return "bg-blue-500";
-            case "expédié":
+            case "expédiée":
                 return "bg-green-500";
-            case "terminé":
+            case "terminée":
                 return "bg-gray-500";
-            case "annulé":
+            case "annulée":
                 return "bg-red-500";
             default:
                 return "bg-gray-500";

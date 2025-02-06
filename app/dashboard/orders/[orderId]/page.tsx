@@ -50,11 +50,11 @@ export default function OrderDetailsPage() {
                 return "bg-yellow-500";
             case "en préparation":
                 return "bg-blue-500";
-            case "expédié":
+            case "expédiée":
                 return "bg-green-500";
-            case "terminé":
+            case "terminée":
                 return "bg-gray-500";
-            case "annulé":
+            case "annulée":
                 return "bg-red-500";
             default:
                 return "bg-gray-500";
@@ -64,8 +64,8 @@ export default function OrderDetailsPage() {
     const getNextStatus = (currentStatus: string) => {
         const mapping: { [key: string]: { next: number; label: string } | null } = {
             "en attente": { next: 2, label: "Passer en préparation" },
-            "en préparation": { next: 3, label: "Passer à expédié" },
-            "expédié": { next: 4, label: "Passer à terminé" },
+            "en préparation": { next: 3, label: "Passer à expédiée" },
+            "expédiée": { next: 4, label: "Passer à terminée" },
         };
         return mapping[currentStatus.toLowerCase()] || null;
     };
@@ -182,7 +182,7 @@ export default function OrderDetailsPage() {
                             Modifier
                         </Button>
                     )}
-                    {currentStatus.toLowerCase() !== "annulé" && currentStatus.toLowerCase() !== "terminé" && (
+                    {currentStatus.toLowerCase() !== "annulée" && currentStatus.toLowerCase() !== "terminée" && (
                         <Button variant="destructive" onClick={handleCancelOrder} type="button">
                             Annuler la commande
                         </Button>
