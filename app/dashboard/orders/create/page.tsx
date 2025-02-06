@@ -42,7 +42,7 @@ export default function NewOrderPage() {
                     defaultQuantities[stock.id_stock] = 1;
                 });
                 setInputQuantities(defaultQuantities);
-            } catch (error) {
+            } catch {
                 toast({
                     title: "Erreur",
                     description: "Erreur lors du chargement des stocks",
@@ -133,10 +133,11 @@ export default function NewOrderPage() {
                 description: "Votre commande a été créée avec succès",
             });
             router.push("/dashboard/orders");
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
             toast({
                 title: "Erreur",
-                description: error.message || "Erreur lors de la création de la commande",
+                description: errorMessage,
                 variant: "destructive",
             });
         } finally {
@@ -173,29 +174,29 @@ export default function NewOrderPage() {
                         ) : (
                             filteredStocks.map((stock) => (
                                 stock.quantite_disponible !== 0 && (
-                                <Card key={stock.id_stock} className="mb-2">
-                                    <CardHeader>
-                                        <CardTitle>{stock.nom}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>{stock.description}</p>
-                                        <p>Disponible : {stock.quantite_disponible}</p>
-                                        <Input
-                                            type="number"
-                                            min="1"
-                                            max={stock.quantite_disponible}
-                                            value={inputQuantities[stock.id_stock] ?? 1}
-                                            placeholder="Quantité"
-                                            onChange={(e) => handleQuantityChange(stock.id_stock, e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    </CardContent>
-                                    <CardFooter>
-                                        <Button onClick={() => addToCart(stock)} type="button">
-                                            Ajouter
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
+                                    <Card key={stock.id_stock} className="mb-2">
+                                        <CardHeader>
+                                            <CardTitle>{stock.nom}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p>{stock.description}</p>
+                                            <p>Disponible : {stock.quantite_disponible}</p>
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                max={stock.quantite_disponible}
+                                                value={inputQuantities[stock.id_stock] ?? 1}
+                                                placeholder="Quantité"
+                                                onChange={(e) => handleQuantityChange(stock.id_stock, e.target.value)}
+                                                className="mt-2"
+                                            />
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button onClick={() => addToCart(stock)} type="button">
+                                                Ajouter
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
                                 )
                             ))
                         )}

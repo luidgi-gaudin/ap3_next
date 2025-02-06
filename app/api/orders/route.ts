@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createOrder, getOrdersData } from "@/services/ordersService";
 
-const bigintReplacer = (_key: string, value: any) =>
+const bigintReplacer = (_key: string, value: unknown): unknown =>
     typeof value === "bigint" ? value.toString() : value;
 
 export async function GET() {

@@ -25,29 +25,29 @@ export default function EditOrderPage() {
     const { orderId } = useParams();
     const router = useRouter();
     const [order, setOrder] = useState<Order | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [modifiedDetails, setModifiedDetails] = useState<Record<number, number>>({});
 
-    const fetchOrder = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch(`/api/orders/${orderId}`);
-            if (!res.ok) throw new Error("Erreur lors de la récupération de la commande");
-            const data = await res.json();
-            setOrder(data.order);
-            const initDetails: Record<number, number> = {};
-            data.order.details_commande.forEach((d: Detail) => {
-                initDetails[d.id_stock] = d.quantite;
-            });
-            setModifiedDetails(initDetails);
-        } catch (error: any) {
-            toast({ title: "Erreur", description: error.message, variant: "destructive" });
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        async function fetchOrder() {
+            try {
+                setLoading(true);
+                const res = await fetch(`/api/orders/${orderId}`);
+                if (!res.ok) throw new Error("Erreur lors de la récupération de la commande");
+                const json = await res.json();
+                setOrder(json.order);
+                const initDetails: Record<number, number> = {};
+                json.order.details_commande.forEach((d: Detail) => {
+                    initDetails[d.id_stock] = d.quantite;
+                });
+                setModifiedDetails(initDetails);
+            } catch (error: unknown) {
+                const errMsg = error instanceof Error ? error.message : "Erreur inconnue";
+                toast({ title: "Erreur", description: errMsg, variant: "destructive" });
+            } finally {
+                setLoading(false);
+            }
+        }
         if (orderId) fetchOrder();
     }, [orderId]);
 
@@ -72,21 +72,22 @@ export default function EditOrderPage() {
                 }),
             });
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Erreur lors de la modification de la commande");
+                const errRes = await res.json();
+                throw new Error(errRes.error || "Erreur lors de la modification de la commande");
             }
-            const data = await res.json();
+            await res.json();
             toast({ title: "Commande modifiée", description: "La commande a été modifiée avec succès" });
             router.push(`/dashboard/orders/${order.id_commande}`);
-        } catch (error: any) {
-            toast({ title: "Erreur", description: error.message, variant: "destructive" });
+        } catch (error: unknown) {
+            const errMsg = error instanceof Error ? error.message : "Erreur lors de la modification de la commande";
+            toast({ title: "Erreur", description: errMsg, variant: "destructive" });
         }
     };
 
     if (loading) return <p>Chargement...</p>;
     if (!order) return <p>Commande non trouvée.</p>;
     if (order.statut_commande.name.toLowerCase() !== "en attente")
-        return <p>La commande ne peut être modifiée que si elle est en statut "en attente".</p>;
+        return <p>La commande ne peut être modifiée que si elle est en statut &quot;en attente&quot;.</p>;
 
     return (
         <div className="container mx-auto p-4">
