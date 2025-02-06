@@ -1,8 +1,6 @@
-// services/dashboardService.ts
 import { prisma } from "@/lib/prisma";
 
 export async function getDashboardData() {
-    // Stock groupé par type
     const stockData = await prisma.stock.groupBy({
         by: ["id_type_stock"],
         _sum: { quantite_disponible: true },
@@ -36,7 +34,6 @@ export async function getDashboardData() {
     }
     ordersByDay.reverse();
 
-    // 10 derniers mouvements avec toutes les infos (selon le schéma)
     const lastMovements = await prisma.mouvement.findMany({
         orderBy: { date_mouvement: "desc" },
         take: 10,
@@ -46,12 +43,12 @@ export async function getDashboardData() {
         },
     });
 
-    // 5 dernières commandes avec toutes les infos et en incluant l'utilisateur associé
     const lastOrders = await prisma.commande.findMany({
         orderBy: { date_commande: "desc" },
         take: 5,
         include: {
             utilisateur: true,
+            statut_commande: true,
         },
     });
 

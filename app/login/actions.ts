@@ -70,10 +70,8 @@ export async function signup(formData: FormData) {
 
     console.log("Données soumises pour l'inscription Supabase :", { email, password });
 
-    // Étape 1 : Inscription sur Supabase
     const { data: dataUser, error } = await supabase.auth.signUp({ email, password });
 
-    // Vérifiez si une erreur s'est produite
     if (error || !dataUser?.user) {
         console.error("Erreur lors de l'inscription avec Supabase :", error);
         redirect('/error');

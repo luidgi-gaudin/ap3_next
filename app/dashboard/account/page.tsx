@@ -1,4 +1,3 @@
-// app/dashboard/account/page.tsx
 import * as React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";

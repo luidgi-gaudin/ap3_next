@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 "use client";
 
 import * as React from "react";
@@ -34,6 +33,7 @@ import {
     TableBody,
     TableCell,
 } from "@/components/ui/table";
+import { useRouter } from "next/navigation";
 
 type DashboardData = {
     ordersByDay: { day: string; count: number }[];
@@ -45,38 +45,22 @@ type DashboardData = {
         quantite: number;
         date_mouvement: string;
         id_commande: number;
-        stock?: {
-            nom: string;
-        };
-        utilisateur?: {
-            nom: string;
-            prenom: string;
-        };
+        stock?: { nom: string };
+        utilisateur?: { nom: string; prenom: string };
     }[];
     lastOrders: {
         id_commande: number;
         id_utilisateur: number;
         date_commande: string;
-        statut: string;
-        utilisateur?: {
-            nom: string;
-            prenom: string;
-        };
+        statut_commande?: { name: string };
+        utilisateur?: { nom: string; prenom: string };
     }[];
 };
 
-/**
- * Composant Skeleton qui reproduit l'agencement et la taille des Card
- */
 function DashboardSkeleton() {
     return (
         <div className="p-4 min-w-7xl mx-auto">
-            {/* Titre */}
-            <div className="mb-6 animate-pulse">
-                <div className="h-8 w-1/3 bg-gray-300 rounded"></div>
-            </div>
-
-            <div className=" grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <Card className="animate-pulse">
                     <CardHeader>
                         <div className="h-6 w-1/2 bg-gray-300 rounded mb-2"></div>
@@ -96,8 +80,6 @@ function DashboardSkeleton() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Section des tableaux */}
             <div className="space-y-4">
                 <Card className="animate-pulse">
                     <CardHeader>
@@ -124,6 +106,7 @@ export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -158,7 +141,23 @@ export default function DashboardPage() {
         );
     }
 
-    // Préparation des données pour le graphique des commandes par jour
+    const getStatusColor = (status: string) => {
+        switch (status.toLowerCase()) {
+            case "en attente":
+                return "bg-yellow-500";
+            case "en préparation":
+                return "bg-blue-500";
+            case "expédié":
+                return "bg-green-500";
+            case "terminé":
+                return "bg-gray-500";
+            case "annulé":
+                return "bg-red-500";
+            default:
+                return "bg-gray-500";
+        }
+    };
+
     const ordersChartData = data.ordersByDay.map((item) => ({
         day: item.day,
         orders: item.count,
@@ -171,7 +170,6 @@ export default function DashboardPage() {
         },
     };
 
-    // Préparation des données pour le graphique du stock par type
     const stockChartData = data.stockByType.map((item) => ({
         type: item.type,
         quantity: item.totalQuantity,
@@ -189,9 +187,6 @@ export default function DashboardPage() {
 
     return (
         <div className="flex flex-col items-center justify-center p-4">
-            <h1 className="mb-6 text-3xl font-bold">Dashboard</h1>
-
-            {/* Section des graphiques */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-7xl mb-6">
                 <Card>
                     <CardHeader>
@@ -269,8 +264,6 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Section des tableaux */}
             <div className="grid grid-cols-1 gap-4 w-full max-w-7xl">
                 <Card>
                     <CardHeader>
@@ -291,7 +284,7 @@ export default function DashboardPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {data.lastMovements.map((mouvement) => (
-                                        <TableRow key={mouvement.id_mouvement}>
+                                        <TableRow key={mouvement.id_mouvement} className="cursor-pointer hover:cursor-pointer">
                                             <TableCell>{mouvement.stock ? mouvement.stock.nom : "-"}</TableCell>
                                             <TableCell>{mouvement.type_mouvement}</TableCell>
                                             <TableCell>{mouvement.quantite}</TableCell>
@@ -327,15 +320,35 @@ export default function DashboardPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {data.lastOrders.map((commande) => (
-                                        <TableRow key={commande.id_commande}>
+                                        <TableRow
+                                            key={commande.id_commande}
+                                            onClick={() =>
+                                                router.push(`/dashboard/orders/${commande.id_commande}`)
+                                            }
+                                            className="cursor-pointer hover:cursor-pointer"
+                                        >
                                             <TableCell>{commande.id_commande}</TableCell>
                                             <TableCell>
                                                 {commande.utilisateur
                                                     ? `${commande.utilisateur.nom} ${commande.utilisateur.prenom}`
                                                     : "-"}
                                             </TableCell>
-                                            <TableCell>{new Date(commande.date_commande).toLocaleString()}</TableCell>
-                                            <TableCell>{commande.statut}</TableCell>
+                                            <TableCell>
+                                                {new Date(commande.date_commande).toLocaleString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                {commande.statut_commande?.name ? (
+                                                    <span
+                                                        className={`px-2 py-1 text-xs font-bold text-white rounded-full ${
+                                                            getStatusColor(commande.statut_commande.name)
+                                                        }`}
+                                                    >
+                            {commande.statut_commande.name}
+                          </span>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

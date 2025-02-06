@@ -1,7 +1,6 @@
 import {prisma} from "@/lib/prisma";
 
 class UtilisateurService {
-    // Créer un utilisateur
     async CreateUtilisateur(donneesUtilisateur: {
         email: string;
         prenom: string;

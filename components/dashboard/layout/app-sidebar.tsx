@@ -44,7 +44,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
       </SidebarHeader>
       <SidebarContent>
         <NavigationButton
-            path="/orders"
+            path="/dashboard/orders"
             label="Commandes"
             icon={<ClipboardList className="w-4 h-4" />}
         />

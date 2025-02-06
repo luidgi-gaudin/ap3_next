@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { login, signup } from "@/app/login/actions";
-import Logo from "@/components/Logo";
+import Logo from "@/components/Login/Logo";
 
 type Role = {
     id_role: number;

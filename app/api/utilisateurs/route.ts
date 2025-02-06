@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import UtilisateurService from "@/services/utilisateurService";
 
-// API pour obtenir un utilisateur par son Supabase ID
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -14,7 +13,6 @@ export async function GET(request: Request) {
             );
         }
 
-        // Utilisation de la méthode getUtilisateurBySupabaseId
         const utilisateur = await UtilisateurService.getUtilisateurBySupabaseId(supabase_id);
 
         if (!utilisateur) {
