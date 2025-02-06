@@ -160,7 +160,7 @@ export default function NewOrderPage() {
             <div className="mb-4">
                 <Input
                     type="text"
-                    placeholder="Rechercher un stock..."
+                    placeholder="Rechercher un produit..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
