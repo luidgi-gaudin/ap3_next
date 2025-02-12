@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {useRouter} from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 interface Order {
     id_commande: number;
@@ -18,12 +19,20 @@ interface Order {
     }[];
 }
 
+interface Status {
+    id_statut: number;
+    name: string;
+}
+
 export default function OrderPage() {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [statuses, setStatuses] = useState<Status[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("tous");
     const router = useRouter();
+
     useEffect(() => {
         const fetchOrders = async () => {
             try {
@@ -40,8 +49,22 @@ export default function OrderPage() {
                 setLoading(false);
             }
         };
+
+        const fetchStatuses = async () => {
+            try {
+                const response = await fetch("/api/orders/statuses");
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const json = await response.json();
+                setStatuses(json.statuses);
+            } catch (err) {
+                console.error("Erreur lors de la récupération des statuts :", err);
+            }
+        };
+
         fetchOrders();
+        fetchStatuses();
     }, []);
+
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
             case "en attente":
@@ -58,11 +81,18 @@ export default function OrderPage() {
                 return "bg-gray-500";
         }
     };
-    const filteredOrders = orders.filter((order) =>
-        order.utilisateur.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.utilisateur.prenom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.id_commande.toString().includes(searchQuery)
-    );
+
+    const filteredOrders = orders.filter((order) => {
+        const matchesSearch =
+            order.utilisateur.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.utilisateur.prenom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            order.id_commande.toString().includes(searchQuery);
+
+        const matchesStatus = statusFilter === "tous" || order.statut_commande.name.toLowerCase() === statusFilter.toLowerCase();
+
+        return matchesSearch && matchesStatus;
+    });
+
     return (
         <div className="container mx-auto p-4">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
@@ -75,6 +105,19 @@ export default function OrderPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="px-3 py-2 border rounded"
                     />
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrer par statut" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem key="tous" value="tous">Tous</SelectItem>
+                            {statuses.map((status) => (
+                                <SelectItem key={status.id_statut} value={status.name}>
+                                    {status.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Link href="/orders/create">
                         <Button>Créer une commande</Button>
                     </Link>
@@ -93,8 +136,8 @@ export default function OrderPage() {
                                     order.statut_commande.name
                                 )} rounded-full`}
                             >
-                  {order.statut_commande.name}
-                </span>
+                                {order.statut_commande.name}
+                            </span>
                         </CardHeader>
                         <CardContent>
                             <p>Date : {new Date(order.date_commande).toLocaleDateString()}</p>
@@ -103,7 +146,9 @@ export default function OrderPage() {
                             </p>
                         </CardContent>
                         <CardFooter>
-                            <Button variant="outline" onClick={() => router.push(`/orders/${order.id_commande}`)}>Détails</Button>
+                            <Button variant="outline" onClick={() => router.push(`/orders/${order.id_commande}`)}>
+                                Détails
+                            </Button>
                         </CardFooter>
                     </Card>
                 ))}

@@ -81,6 +81,10 @@ export async function createOrder({ items }: CreateOrderInput) {
     return newOrder;
 }
 
+export async function getStatuses() {
+    const statuses = await prisma.statut_commande.findMany();
+    return statuses;
+}
 
 export async function getOrderById(orderId: number) {
     const order = await prisma.commande.findUnique({
