@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/utils/supabase/server'
 import UtilisateurService from "@/services/utilisateurService";
+import { toast } from '@/hooks/use-toast';
 
 export async function logout() {
     const supabase = await createClient()
@@ -16,8 +16,6 @@ export async function logout() {
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
     const data = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
@@ -26,15 +24,34 @@ export async function login(formData: FormData) {
     const { data: dataUser, error } = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        redirect('/error')
+        if (error.message.includes("Invalid login credentials")) {
+            toast({
+                title: "Erreur de connexion",
+                description: "Email ou mot de passe incorrect.",
+                variant: "destructive",
+            });
+        } else {
+            toast({
+                title: "Erreur de connexion",
+                description: error.message,
+                variant: "destructive",
+            });
+        }
+        return;
     }
 
-    const userid= dataUser.user?.id;
+    const userid = dataUser.user?.id;
     const utilisateur = await UtilisateurService.getUtilisateurBySupabaseId(userid);
 
     if (!utilisateur) {
-        redirect('/error')
+        toast({
+            title: "Erreur",
+            description: "Utilisateur non trouvé.",
+            variant: "destructive",
+        });
+        return;
     }
+
     switch (utilisateur.id_role) {
         case 1:
             redirect('/admin');
@@ -43,11 +60,15 @@ export async function login(formData: FormData) {
             redirect('/dashboard');
             break;
         default:
-            console.error(`Rôle utilisateur inconnu : ${utilisateur.id_role}`);
-            redirect('/error');
+            toast({
+                title: "Erreur",
+                description: `Rôle utilisateur inconnu : ${utilisateur.id_role}`,
+                variant: "destructive",
+            });
             break;
     }
 }
+
 export async function signup(formData: FormData) {
     const supabase = await createClient();
 
@@ -58,29 +79,26 @@ export async function signup(formData: FormData) {
     const id_role = formData.get('role') as string | null;
 
     if (!email || !password || !prenom || !nom || !id_role) {
-        console.error("Champs manquants ou invalides :", {
-            email,
-            password,
-            prenom,
-            nom,
-            id_role,
+        toast({
+            title: "Erreur d'inscription",
+            description: "Veuillez remplir tous les champs.",
+            variant: "destructive",
         });
-        redirect('/error'); // Redirigez l'utilisateur à une page d'erreur
+        return;
     }
-
-    console.log("Données soumises pour l'inscription Supabase :", { email, password });
 
     const { data: dataUser, error } = await supabase.auth.signUp({ email, password });
 
     if (error || !dataUser?.user) {
-        console.error("Erreur lors de l'inscription avec Supabase :", error);
-        redirect('/error');
+        toast({
+            title: "Erreur d'inscription",
+            description: error?.message || "Erreur lors de l'inscription.",
+            variant: "destructive",
+        });
         return;
     }
 
-    const userId = dataUser.user.id; // ID utilisateur créé par Supabase
-
-    console.log("Utilisateur enregistré avec succès dans Supabase :", userId);
+    const userId = dataUser.user.id;
 
     const utilisateurData = {
         email,
@@ -90,13 +108,15 @@ export async function signup(formData: FormData) {
         id_role: parseInt(id_role),
     };
 
-    console.log("Données utilisateur prêtes pour Prisma :", utilisateurData);
-
     try {
         await UtilisateurService.CreateUtilisateur(utilisateurData);
-    } catch (errorUtilisateur) {
-        console.error("Erreur lors de la création de l'utilisateur dans Prisma :", errorUtilisateur);
-        redirect('/error');
+    } catch {
+        toast({
+            title: "Erreur",
+            description: "Erreur lors de la création de l'utilisateur dans Prisma.",
+            variant: "destructive",
+        });
+        return;
     }
 
     revalidatePath('/', 'layout');
