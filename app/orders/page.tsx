@@ -75,7 +75,7 @@ export default function OrderPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="px-3 py-2 border rounded"
                     />
-                    <Link href="/dashboard/orders/create">
+                    <Link href="/orders/create">
                         <Button>Créer une commande</Button>
                     </Link>
                 </div>
@@ -103,7 +103,7 @@ export default function OrderPage() {
                             </p>
                         </CardContent>
                         <CardFooter>
-                            <Button variant="outline" onClick={() => router.push(`/dashboard/orders/${order.id_commande}`)}>Détails</Button>
+                            <Button variant="outline" onClick={() => router.push(`/orders/${order.id_commande}`)}>Détails</Button>
                         </CardFooter>
                     </Card>
                 ))}

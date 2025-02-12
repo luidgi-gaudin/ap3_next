@@ -137,7 +137,7 @@ export default function OrderDetailsPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <Link href="/dashboard/orders">
+            <Link href="/orders">
                 <Button variant="outline" type="button">
                     Retour aux commandes
                 </Button>
@@ -175,7 +175,7 @@ export default function OrderDetailsPage() {
                         <Button
                             variant="outline"
                             onClick={() => {
-                                router.push(`/dashboard/orders/${order.id_commande}/edit`);
+                                router.push(`/orders/${order.id_commande}/edit`);
                             }}
                             type="button"
                         >
