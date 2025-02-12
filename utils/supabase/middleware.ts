@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import utilisateurService from "@/services/utilisateurService";
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -47,6 +48,23 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)
+    }
+
+    if(user) {
+        const utilisateur = await utilisateurService.getUtilisateurBySupabaseId(user.id);
+        if(utilisateur){
+                switch (utilisateur.id_role) {
+                    case 2:
+                        if(request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname.startsWith('/api/admin')){
+                            const url = request.nextUrl.clone()
+                            url.pathname = '/dashboard'
+                            return NextResponse.redirect(url)
+                        }
+                        break;
+
+
+                }
+        }
     }
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is.
