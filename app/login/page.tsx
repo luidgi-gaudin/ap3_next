@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { login, signup } from "@/app/login/actions";
 import Logo from "@/components/Login/Logo";
-import { Toaster } from "@/components/ui/toaster";
 
 type Role = {
     id_role: number;
@@ -30,11 +29,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisib
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
             noValidate
-            onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                await login(formData);
-            }}
         >
             {/* Champ Email */}
             <div className="mb-4">
@@ -80,7 +74,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisib
                 </div>
             </div>
 
-            <Button type="submit" className="w-full font-medium">
+            <Button formAction={login} type="submit" className="w-full font-medium">
                 Se connecter
             </Button>
         </motion.form>
@@ -102,27 +96,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    rolesError,
                                                    isLoadingRole,
                                                }) => {
-    const [passwordError, setPasswordError] = React.useState<string | null>(null);
-
-    const validatePassword = (password: string) => {
-        const minLength = 8;
-        const hasUpperCase = /[A-Z]/.test(password);
-        const hasNumber = /\d/.test(password);
-        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-        if (password.length < minLength) {
-            setPasswordError(`Le mot de passe doit contenir au moins ${minLength} caractères.`);
-        } else if (!hasUpperCase) {
-            setPasswordError("Le mot de passe doit contenir au moins une majuscule.");
-        } else if (!hasNumber) {
-            setPasswordError("Le mot de passe doit contenir au moins un chiffre.");
-        } else if (!hasSpecialChar) {
-            setPasswordError("Le mot de passe doit contenir au moins un caractère spécial.");
-        } else {
-            setPasswordError(null);
-        }
-    };
-
     return (
         <motion.form
             key="signupForm"
@@ -131,15 +104,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
             exit={{ opacity: 0, x: 50 }}
             transition={{ duration: 0.3 }}
             noValidate
-            onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const password = formData.get('password') as string;
-                validatePassword(password);
-                if (!passwordError) {
-                    await signup(formData);
-                }
-            }}
         >
             <div className="mb-4">
                 <Label htmlFor="firstName" className="text-sm font-medium ">
@@ -217,7 +181,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                         placeholder="••••••••"
                         className="pl-8 pr-10"
                         required
-                        onChange={(e) => validatePassword(e.target.value)}
                     />
                     <button
                         type="button"
@@ -228,10 +191,9 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                 </div>
-                {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
             </div>
 
-            <Button type="submit" className="w-full font-medium">
+            <Button formAction={signup} type="submit" className="w-full font-medium">
                 S&apos;inscrire
             </Button>
         </motion.form>
@@ -272,7 +234,6 @@ export default function AuthPage() {
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b bg-muted px-4">
-            <Toaster />
             <Logo />
             <Card className="mt-6 pt-6 w-full max-w-md">
                 <CardContent>
