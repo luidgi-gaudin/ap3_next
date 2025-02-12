@@ -10,7 +10,6 @@ import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { login, signup } from "@/app/login/actions";
 import Logo from "@/components/Login/Logo";
 import { Toaster } from "@/components/ui/toaster";
-import { toast } from "@/hooks/use-toast";
 
 type Role = {
     id_role: number;
