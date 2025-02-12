@@ -24,11 +24,19 @@ export async function login(formData: FormData) {
     const { data: dataUser, error } = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        toast({
-            title: "Erreur de connexion",
-            description: error.message,
-            variant: "destructive",
-        });
+        if (error.message.includes("Invalid login credentials")) {
+            toast({
+                title: "Erreur de connexion",
+                description: "Email ou mot de passe incorrect.",
+                variant: "destructive",
+            });
+        } else {
+            toast({
+                title: "Erreur de connexion",
+                description: error.message,
+                variant: "destructive",
+            });
+        }
         return;
     }
 
