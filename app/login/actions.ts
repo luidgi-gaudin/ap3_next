@@ -102,7 +102,7 @@ export async function signup(formData: FormData) {
 
     try {
         await UtilisateurService.CreateUtilisateur(utilisateurData);
-    } catch (errorUtilisateur) {
+    } catch {
         toast({
             title: "Erreur",
             description: "Erreur lors de la création de l'utilisateur dans Prisma.",
