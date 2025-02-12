@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import UtilisateurService from "@/services/utilisateurService";
-import { toast } from '@/hooks/use-toast';
 
 export async function logout() {
     const supabase = await createClient()
@@ -24,32 +23,14 @@ export async function login(formData: FormData) {
     const { data: dataUser, error } = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        if (error.message.includes("Invalid login credentials")) {
-            toast({
-                title: "Erreur de connexion",
-                description: "Email ou mot de passe incorrect.",
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "Erreur de connexion",
-                description: error.message,
-                variant: "destructive",
-            });
-        }
-        return;
+        return { error: error.message.includes("Invalid login credentials") ? "Email ou mot de passe incorrect." : error.message };
     }
 
     const userid = dataUser.user?.id;
     const utilisateur = await UtilisateurService.getUtilisateurBySupabaseId(userid);
 
     if (!utilisateur) {
-        toast({
-            title: "Erreur",
-            description: "Utilisateur non trouvé.",
-            variant: "destructive",
-        });
-        return;
+        return { error: "Utilisateur non trouvé." };
     }
 
     switch (utilisateur.id_role) {
@@ -60,13 +41,10 @@ export async function login(formData: FormData) {
             redirect('/dashboard');
             break;
         default:
-            toast({
-                title: "Erreur",
-                description: `Rôle utilisateur inconnu : ${utilisateur.id_role}`,
-                variant: "destructive",
-            });
-            break;
+            return { error: `Rôle utilisateur inconnu : ${utilisateur.id_role}` };
     }
+
+    return { error: null };
 }
 
 export async function signup(formData: FormData) {
@@ -79,23 +57,13 @@ export async function signup(formData: FormData) {
     const id_role = formData.get('role') as string | null;
 
     if (!email || !password || !prenom || !nom || !id_role) {
-        toast({
-            title: "Erreur d'inscription",
-            description: "Veuillez remplir tous les champs.",
-            variant: "destructive",
-        });
-        return;
+        return { error: "Veuillez remplir tous les champs." };
     }
 
     const { data: dataUser, error } = await supabase.auth.signUp({ email, password });
 
     if (error || !dataUser?.user) {
-        toast({
-            title: "Erreur d'inscription",
-            description: error?.message || "Erreur lors de l'inscription.",
-            variant: "destructive",
-        });
-        return;
+        return { error: error?.message || "Erreur lors de l'inscription." };
     }
 
     const userId = dataUser.user.id;
@@ -111,14 +79,11 @@ export async function signup(formData: FormData) {
     try {
         await UtilisateurService.CreateUtilisateur(utilisateurData);
     } catch {
-        toast({
-            title: "Erreur",
-            description: "Erreur lors de la création de l'utilisateur dans Prisma.",
-            variant: "destructive",
-        });
-        return;
+        return { error: "Erreur lors de la création de l'utilisateur dans Prisma." };
     }
 
     revalidatePath('/', 'layout');
     redirect('/');
+
+    return { error: null };
 }

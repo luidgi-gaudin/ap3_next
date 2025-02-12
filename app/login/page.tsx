@@ -10,6 +10,7 @@ import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { login, signup } from "@/app/login/actions";
 import Logo from "@/components/Login/Logo";
 import { Toaster } from "@/components/ui/toaster";
+import { toast } from "@/hooks/use-toast";
 
 type Role = {
     id_role: number;
@@ -19,9 +20,19 @@ type Role = {
 type LoginFormProps = {
     showPassword: boolean;
     togglePasswordVisibility: () => void;
+    onError: (message: string) => void;
 };
 
-const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisibility }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisibility, onError }) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const result = await login(formData);
+        if (result.error) {
+            onError(result.error);
+        }
+    };
+
     return (
         <motion.form
             key="loginForm"
@@ -30,11 +41,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisib
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
             noValidate
-            onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                await login(formData);
-            }}
+            onSubmit={handleSubmit}
         >
             {/* Champ Email */}
             <div className="mb-4">
@@ -93,6 +100,7 @@ type SignUpFormProps = {
     roles: Role[];
     rolesError: string | null;
     isLoadingRole: boolean;
+    onError: (message: string) => void;
 };
 
 const SignUpForm: React.FC<SignUpFormProps> = ({
@@ -101,6 +109,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    roles,
                                                    rolesError,
                                                    isLoadingRole,
+                                                   onError,
                                                }) => {
     const [passwordError, setPasswordError] = React.useState<string | null>(null);
 
@@ -123,6 +132,19 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         }
     };
 
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const password = formData.get('password') as string;
+        validatePassword(password);
+        if (!passwordError) {
+            const result = await signup(formData);
+            if (result.error) {
+                onError(result.error);
+            }
+        }
+    };
+
     return (
         <motion.form
             key="signupForm"
@@ -131,15 +153,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
             exit={{ opacity: 0, x: 50 }}
             transition={{ duration: 0.3 }}
             noValidate
-            onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const password = formData.get('password') as string;
-                validatePassword(password);
-                if (!passwordError) {
-                    await signup(formData);
-                }
-            }}
+            onSubmit={handleSubmit}
         >
             <div className="mb-4">
                 <Label htmlFor="firstName" className="text-sm font-medium ">
@@ -249,6 +263,14 @@ export default function AuthPage() {
         setShowPassword((prev) => !prev);
     }, []);
 
+    const handleError = (message: string) => {
+        toast({
+            title: "Erreur",
+            description: message,
+            variant: "destructive",
+        });
+    };
+
     React.useEffect(() => {
         const fetchRoles = async () => {
             try {
@@ -294,7 +316,7 @@ export default function AuthPage() {
                     </div>
                     <AnimatePresence mode="wait">
                         {isLogin ? (
-                            <LoginForm showPassword={showPassword} togglePasswordVisibility={togglePasswordVisibility} />
+                            <LoginForm showPassword={showPassword} togglePasswordVisibility={togglePasswordVisibility} onError={handleError} />
                         ) : (
                             <SignUpForm
                                 showPassword={showPassword}
@@ -302,6 +324,7 @@ export default function AuthPage() {
                                 roles={roles}
                                 rolesError={rolesError}
                                 isLoadingRole={isLoadingRole}
+                                onError={handleError}
                             />
                         )}
                     </AnimatePresence>
