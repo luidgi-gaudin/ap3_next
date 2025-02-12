@@ -7,7 +7,7 @@ export function DashboardLinkButton() {
     const router = useRouter();
 
     const handleClick = () => {
-        router.push("/dashboard");
+        router.push("/");
     };
 
     return (
