@@ -20,31 +20,13 @@ export async function login(formData: FormData) {
         password: formData.get('password') as string,
     }
 
-    const { data: dataUser, error } = await supabase.auth.signInWithPassword(data)
+    const {error} = await supabase.auth.signInWithPassword(data)
 
     if (error) {
-        return { error: error.message.includes("Invalid login credentials") ? "Email ou mot de passe incorrect." : error.message };
+        return {error: error.message.includes("Invalid login credentials") ? "Email ou mot de passe incorrect." : error.message};
     }
+    redirect('/')
 
-    const userid = dataUser.user?.id;
-    const utilisateur = await UtilisateurService.getUtilisateurBySupabaseId(userid);
-
-    if (!utilisateur) {
-        return { error: "Utilisateur non trouvé." };
-    }
-
-    switch (utilisateur.id_role) {
-        case 1:
-            redirect('/admin');
-            break;
-        case 2:
-            redirect('/dashboard');
-            break;
-        default:
-            return { error: `Rôle utilisateur inconnu : ${utilisateur.id_role}` };
-    }
-
-    return { error: null };
 }
 
 export async function signup(formData: FormData) {
