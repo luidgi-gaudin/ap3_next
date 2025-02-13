@@ -27,7 +27,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { logout } from "@/app/login/actions"
+import { logout } from "@/app/(app)/login/actions"
 
 export function NavUser({
   user,
@@ -83,7 +83,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => redirectTo('/dashboard/account')}>
+              <DropdownMenuItem onClick={() => redirectTo('/account')}>
                 <BadgeCheck />
                 Compte
               </DropdownMenuItem>

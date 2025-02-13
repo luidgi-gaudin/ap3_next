@@ -64,8 +64,8 @@ export async function signup(formData: FormData) {
         return { error: "Erreur lors de la création de l'utilisateur dans Prisma." };
     }
 
-    revalidatePath('/', 'layout');
-    redirect('/');
+    revalidatePath('/login', 'layout');
+    redirect('/login');
 
     return { error: null };
 }

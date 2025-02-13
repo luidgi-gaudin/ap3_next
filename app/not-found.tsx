@@ -12,7 +12,7 @@ export default function NotFound() {
                     <p className="text-center text-sm text-muted-foreground">
                         Oups… la page que vous recherchez n&apos;existe pas.
                     </p>
-                    <Link href="/dashboard">
+                    <Link href="/">
                         <Button>Retour à l&apos;accueil</Button>
                     </Link>
                 </CardContent>
