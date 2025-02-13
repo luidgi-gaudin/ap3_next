@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import React from "react";
+import { Analytics } from "@vercel/analytics/next";
 
 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({
             defaultTheme="light"
         >
             {children}
+            <Analytics />
             <Toaster />
         </ThemeProvider>
 
