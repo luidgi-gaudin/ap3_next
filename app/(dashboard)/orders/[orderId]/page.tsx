@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { getUser } from "@/services/userService";
 
 interface Order {
     id_commande: number;
@@ -19,11 +20,14 @@ interface Order {
     }[];
 }
 
+
+
 export default function OrderDetailsPage() {
     const { orderId } = useParams();
     const router = useRouter();
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [user, setUser] = useState<any | null>(null);
 
     const fetchOrder = useCallback(async () => {
         try {
@@ -40,9 +44,42 @@ export default function OrderDetailsPage() {
         }
     }, [orderId]);
 
+    const fetchUserData = async () => {
+        try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Not authenticated");
+            }
+
+            const response = await fetch(`/api/utilisateurs?supabase_id=${supabaseUser.id}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user data");
+            }
+
+            const userData = await response.json();
+            return userData;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            throw error;
+        }
+    };
+
     useEffect(() => {
         if (orderId) fetchOrder();
     }, [orderId, fetchOrder]);
+
+    useEffect(() => {
+        const getUserData = async () => {
+            try {
+                const userData = await fetchUserData();
+                setUser(userData);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        };
+
+        getUserData();
+    }, []);
 
     const getStatusColor = (status: string): string => {
         switch (status.toLowerCase()) {
@@ -151,8 +188,8 @@ export default function OrderDetailsPage() {
                                 currentStatus
                             )} rounded-full`}
                         >
-              {currentStatus}
-            </span>
+                            {currentStatus}
+                        </span>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -182,12 +219,13 @@ export default function OrderDetailsPage() {
                             Modifier
                         </Button>
                     )}
-                    {currentStatus.toLowerCase() !== "annulée" && currentStatus.toLowerCase() !== "terminée" && (
+                    {((user?.role.nom_role === "Administrateur") ||
+                        (currentStatus.toLowerCase() === "en attente")) && (
                         <Button variant="destructive" onClick={handleCancelOrder} type="button">
                             Annuler la commande
                         </Button>
                     )}
-                    {nextStatus && (
+                    {(nextStatus && user?.role.nom_role === "Administrateur") && (
                         <Button onClick={handleUpdateStatus} type="button">
                             {nextStatus.label}
                         </Button>

@@ -77,7 +77,7 @@ export default function EditOrderPage() {
             }
             await res.json();
             toast({ title: "Commande modifiée", description: "La commande a été modifiée avec succès" });
-            router.push(`/dashboard/orders/${order.id_commande}`);
+            router.push(`/orders/${order.id_commande}`);
         } catch (error: unknown) {
             const errMsg = error instanceof Error ? error.message : "Erreur lors de la modification de la commande";
             toast({ title: "Erreur", description: errMsg, variant: "destructive" });
@@ -91,7 +91,7 @@ export default function EditOrderPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <Link href={`/dashboard/orders/${order.id_commande}`}>
+            <Link href={`/orders/${order.id_commande}`}>
                 <Button variant="outline" type="button">Retour aux détails</Button>
             </Link>
             <Card className="mt-4">

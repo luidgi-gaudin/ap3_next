@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { getUser } from "@/services/userService";
 
 interface Order {
     id_commande: number;
@@ -31,16 +32,45 @@ export default function OrderPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
+    const [user, setUser] = useState<any>(null);
     const router = useRouter();
+
+    const fetchUserData = async () => {
+        try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Not authenticated");
+            }
+
+            const response = await fetch(`/api/utilisateurs?supabase_id=${supabaseUser.id}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user data");
+            }
+
+            const userData = await response.json();
+            return userData;
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            throw error;
+        }
+    };
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
+                const userData = await fetchUserData();
+                setUser(userData);
+
                 const response = await fetch("/api/orders");
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
-                setOrders(json.orders);
+
+                const filteredOrders = userData.role.nom_role === "Administrateur"
+                    ? json.orders
+                    : json.orders.filter((order: Order) => order.utilisateur.email === userData.email);
+
+                setOrders(filteredOrders);
                 setError(null);
             } catch (err) {
                 console.error("Erreur lors de la récupération des commandes :", err);
