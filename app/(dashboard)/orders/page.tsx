@@ -40,7 +40,7 @@ export default function OrderPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
-    const [user, setUser] = useState<User>(null);
+    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     const fetchUserData = async () => {
@@ -74,9 +74,9 @@ export default function OrderPage() {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
 
-                const filteredOrders = user.role.nom_role === "Administrateur"
+                const filteredOrders = user?.role.nom_role === "Administrateur"
                     ? json.orders
-                    : json.orders.filter((order: Order) => order.utilisateur.email === user.email);
+                    : json.orders.filter((order: Order) => order.utilisateur.email === user?.email);
 
                 setOrders(filteredOrders);
                 setError(null);
