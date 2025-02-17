@@ -25,6 +25,14 @@ interface Status {
     name: string;
 }
 
+interface User {
+    id_utilisateur: number;
+    nom: string;
+    prenom: string;
+    email: string;
+    role: { nom_role: string };
+}
+
 export default function OrderPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [statuses, setStatuses] = useState<Status[]>([]);
@@ -32,7 +40,7 @@ export default function OrderPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User>(null);
     const router = useRouter();
 
     const fetchUserData = async () => {
@@ -66,9 +74,9 @@ export default function OrderPage() {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
 
-                const filteredOrders = userData.role.nom_role === "Administrateur"
+                const filteredOrders = user.role.nom_role === "Administrateur"
                     ? json.orders
-                    : json.orders.filter((order: Order) => order.utilisateur.email === userData.email);
+                    : json.orders.filter((order: Order) => order.utilisateur.email === user.email);
 
                 setOrders(filteredOrders);
                 setError(null);
