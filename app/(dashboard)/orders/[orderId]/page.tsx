@@ -20,14 +20,20 @@ interface Order {
     }[];
 }
 
-
+interface Utilisateur {
+    id_utilisateur: number;
+    nom: string;
+    prenom: string;
+    email: string;
+    role: { nom_role: string };
+}
 
 export default function OrderDetailsPage() {
     const { orderId } = useParams();
     const router = useRouter();
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<Utilisateur | null>(null);
 
     const fetchOrder = useCallback(async () => {
         try {
