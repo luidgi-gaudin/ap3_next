@@ -21,26 +21,29 @@ export default function StockPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+    const [quantityToAdd, setQuantityToAdd] = useState<number>(0);
+    const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchStocks = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch("/api/stocks");
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const json = await response.json();
-                setStocks(json.stocks);
-                setFilteredStocks(json.stocks);
-                setError(null);
-            } catch (err) {
-                console.error("Erreur lors de la récupération des stocks :", err);
-                setError("Erreur lors de la récupération des stocks");
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchStocks = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("/api/stocks");
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const json = await response.json();
+            setStocks(json.stocks);
+            setFilteredStocks(json.stocks);
+            setError(null);
+        } catch (err) {
+            console.error("Erreur lors de la récupération des stocks :", err);
+            setError("Erreur lors de la récupération des stocks");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchStocks();
     }, []);
 
@@ -52,13 +55,31 @@ export default function StockPage() {
         setFilteredStocks(results);
     }, [searchTerm, stocks]);
 
+    const handleAddStock = async (stockId: number, quantity: number) => {
+        try {
+            const response = await fetch(`/api/stocks/${stockId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quantityToAdd: quantity }),
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            fetchStocks();
+            setIsPopupOpen(false);
+        } catch (err) {
+            console.error("Erreur lors de l'ajout du stock :", err);
+        }
+    };
+
+
     return (
         <div className="container mx-auto p-4">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                 <h1 className="text-3xl font-bold mb-4 md:mb-0">Stock</h1>
                 <div className="flex items-center space-x-4">
                     <Link href="/orders/create">
-                        <Button>Créer un produit</Button>
+                        <Button onClick={() => (router.push("/stock/add"))}>Créer un produit</Button>
                     </Link>
                 </div>
             </div>
@@ -84,14 +105,14 @@ export default function StockPage() {
                     {loading ? (
                         Array.from({ length: 5 }).map((_, index) => (
                             <TableRow key={index}>
-                                {Array.from({length : 4}).map((_, index) => (
-                                <TableCell key={index} >
-                                    <div className="animate-pulse flex space-x-4">
-                                        <div className="flex-1 space-y-4 py-1">
-                                            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                    <TableCell key={index}>
+                                        <div className="animate-pulse flex space-x-4">
+                                            <div className="flex-1 space-y-4 py-1">
+                                                <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </TableCell>
+                                    </TableCell>
                                 ))}
                             </TableRow>
                         ))
@@ -103,19 +124,36 @@ export default function StockPage() {
                                 <TableCell>{stock.TypeStock.nom_type}</TableCell>
                                 <TableCell>{stock.quantite_disponible}</TableCell>
                                 <TableCell>
-                                    <Button variant="outline" onClick={() => router.push(`/stock/${stock.id_stock}`)}>
-                                        Détails
-                                    </Button>
-                                    <Button variant="outline" onClick={() => router.push(`/stock/${stock.id_stock}/add`)}>
+                                    <Button variant="outline" onClick={() => {
+                                        setSelectedStock(stock);
+                                        setIsPopupOpen(true);
+                                    }}>
                                         Ajouter du stock
                                     </Button>
                                 </TableCell>
                             </TableRow>
                         ))
                     )}
-            {!loading && filteredStocks.length === 0 && <p>Aucun stock trouvé.</p>}
+                    {!loading && filteredStocks.length === 0 && <p>Aucun stock trouvé.</p>}
                 </TableBody>
             </Table>
+            {isPopupOpen && selectedStock && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Ajouter du stock pour {selectedStock.nom}</h2>
+                        <Input
+                            type="number"
+                            value={quantityToAdd}
+                            onChange={(e) => setQuantityToAdd(Number(e.target.value))}
+                            className="mb-4"
+                        />
+                        <div className="flex justify-end space-x-4">
+                            <Button variant="outline" onClick={() => setIsPopupOpen(false)}>Annuler</Button>
+                            <Button onClick={() => handleAddStock(selectedStock.id_stock, quantityToAdd)}>Ajouter</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

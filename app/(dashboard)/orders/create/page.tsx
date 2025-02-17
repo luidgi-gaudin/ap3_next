@@ -132,7 +132,7 @@ export default function NewOrderPage() {
                 title: "Commande créée",
                 description: "Votre commande a été créée avec succès",
             });
-            router.push("/dashboard/orders");
+            router.push("/orders");
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : "Erreur lors de la création de la commande";
             toast({
@@ -151,7 +151,7 @@ export default function NewOrderPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <Link href="/dashboard/orders">
+            <Link href="/orders">
                 <Button variant="outline" className="mb-4" type="button">
                     Retour aux commandes
                 </Button>
