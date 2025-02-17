@@ -17,6 +17,7 @@ class UtilisateurService {
     async getUtilisateurBySupabaseId(supabase_id: string) {
         return prisma.utilisateur.findUnique({
             where: { supabase_id },
+            include : {role: true},
         });
     }
     async updateUtilisateurBySupabaseId(supabaseId: string, data: { prenom: string; nom: string }) {

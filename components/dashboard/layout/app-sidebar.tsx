@@ -29,6 +29,7 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
       name: utilisateur?.prenom + " " + utilisateur?.nom as string,
         email: data.user.email as string,
         avatar: utilisateur ? utilisateur.prenom.charAt(0).toUpperCase() + utilisateur.nom.charAt(0).toUpperCase() : "NN",
+      role: utilisateur?.role.nom_role as string,
     }
 
   return (
