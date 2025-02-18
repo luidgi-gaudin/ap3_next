@@ -55,8 +55,7 @@ export default function OrderPage() {
                 throw new Error("Failed to fetch user data");
             }
 
-            const userData = await response.json();
-            return userData;
+            return await response.json();
         } catch (error) {
             console.error("Error fetching user:", error);
             throw error;

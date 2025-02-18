@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,6 +11,7 @@ interface Stock {
     description: string;
     quantite_disponible: number;
     id_type_stock: string;
+    canDelete: boolean;
     TypeStock: { nom_type: string };
 }
 
@@ -25,6 +25,20 @@ export default function StockPage() {
     const [quantityToAdd, setQuantityToAdd] = useState<number>(0);
     const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
     const router = useRouter();
+
+    const handleDeleteStock = async (stockId: number) => {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer ce stock ?")) return;
+
+        try {
+            const response = await fetch(`/api/stocks/${stockId}`, {
+                method: 'DELETE',
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            fetchStocks();
+        } catch (err) {
+            console.error("Erreur lors de la suppression du stock :", err);
+        }
+    };
 
     const fetchStocks = async () => {
         try {
@@ -78,9 +92,7 @@ export default function StockPage() {
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                 <h1 className="text-3xl font-bold mb-4 md:mb-0">Stock</h1>
                 <div className="flex items-center space-x-4">
-                    <Link href="/orders/create">
                         <Button onClick={() => (router.push("/stock/add"))}>Créer un produit</Button>
-                    </Link>
                 </div>
             </div>
             <Input
@@ -124,12 +136,22 @@ export default function StockPage() {
                                 <TableCell>{stock.TypeStock.nom_type}</TableCell>
                                 <TableCell>{stock.quantite_disponible}</TableCell>
                                 <TableCell>
-                                    <Button variant="outline" onClick={() => {
-                                        setSelectedStock(stock);
-                                        setIsPopupOpen(true);
-                                    }}>
-                                        Ajouter du stock
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" onClick={() => {
+                                            setSelectedStock(stock);
+                                            setIsPopupOpen(true);
+                                        }}>
+                                            Ajouter du stock
+                                        </Button>
+                                        {stock.canDelete && (
+                                            <Button
+                                                variant="destructive"
+                                                onClick={() => handleDeleteStock(stock.id_stock)}
+                                            >
+                                                Supprimer
+                                            </Button>
+                                        )}
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))

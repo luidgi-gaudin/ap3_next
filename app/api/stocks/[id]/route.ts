@@ -1,25 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { updateStockQuantity } from "@/services/stockService";
+import { NextResponse } from "next/server";
+import { deleteStock, updateStockQuantity } from "@/services/stockService";
 
-export type ParamsType = Promise<{ id: string }>;
-
-export async function PUT(request: NextRequest, { params }: { params: ParamsType }) {
+export async function DELETE(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
     try {
-        const { id } = await params;
-        const stockId = parseInt(id, 10);
+        const stockId = parseInt(params.id);
+        await deleteStock(stockId);
+        return NextResponse.json({ message: "Stock supprimé" }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Erreur lors de la suppression du stock" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function PUT(
+    request: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const stockId = parseInt(params.id);
         const { quantityToAdd } = await request.json();
-
-        if (isNaN(stockId) || typeof quantityToAdd !== "number") {
-            return NextResponse.json(
-                { error: "ID de stock ou quantité invalide" },
-                { status: 400 }
-            );
-        }
-
         const updatedStock = await updateStockQuantity(stockId, quantityToAdd);
         return NextResponse.json(updatedStock, { status: 200 });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour du stock :", error);
         return NextResponse.json(
             { error: "Erreur lors de la mise à jour du stock" },
             { status: 500 }
