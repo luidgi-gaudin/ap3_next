@@ -41,7 +41,6 @@ export default function OrderPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
-    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     const fetchUserData = async () => {
@@ -68,16 +67,13 @@ export default function OrderPage() {
             try {
                 setLoading(true);
                 const userData = await fetchUserData();
-                setUser(userData);
-
                 const response = await fetch("/api/orders");
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
 
-                const filteredOrders = user?.id_role === 1
+                const filteredOrders = userData?.id_role === 1
                     ? json.orders
-                    : json.orders.filter((order: Order) => order.utilisateur.email === user?.email);
-
+                    : json.orders.filter((order: Order) => order.utilisateur.email === userData?.email)
                 setOrders(filteredOrders);
                 setError(null);
             } catch (err) {
@@ -130,6 +126,7 @@ export default function OrderPage() {
 
         return matchesSearch && matchesStatus;
     });
+
 
     return (
         <div className="container mx-auto p-4">
