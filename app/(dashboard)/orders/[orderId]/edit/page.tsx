@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import {getUser} from "@/services/userService";
 
 interface Detail {
     id_stock: number;
@@ -61,6 +62,11 @@ export default function EditOrderPage() {
         e.preventDefault();
         if (!order) return;
         try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Non authentifié");
+            }
+
             const res = await fetch(`/api/orders/${order.id_commande}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
@@ -68,9 +74,11 @@ export default function EditOrderPage() {
                     items: Object.keys(modifiedDetails).map((id) => ({
                         id_stock: Number(id),
                         quantite: modifiedDetails[Number(id)]
-                    }))
+                    })),
+                    supabaseUserId: supabaseUser.id
                 }),
             });
+
             if (!res.ok) {
                 const errRes = await res.json();
                 throw new Error(errRes.error || "Erreur lors de la modification de la commande");

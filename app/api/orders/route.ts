@@ -28,11 +28,16 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { items } = body;
+        const { items, supabaseUserId } = body;
+
         if (!items || !Array.isArray(items)) {
             throw new Error("Le corps de la requête doit contenir un tableau 'items'");
         }
-        const newOrder = await createOrder({ items });
+        if (!supabaseUserId) {
+            throw new Error("L'identifiant utilisateur est requis");
+        }
+
+        const newOrder = await createOrder({ items, supabaseUserId });
         return new NextResponse(
             JSON.stringify({ order: newOrder }, bigintReplacer),
             {

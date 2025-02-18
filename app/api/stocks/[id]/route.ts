@@ -30,13 +30,21 @@ export async function PUT(
     try {
         const { id } = await props.params;
         const stockId = parseInt(id);
-        const data = await request.json();
-        const updatedStock = await updateStockQuantity(stockId, data.quantityToAdd);
+        const { quantityToAdd, supabaseUserId } = await request.json();
+
+        if (!supabaseUserId) {
+            return NextResponse.json(
+                { error: "Identifiant utilisateur requis" },
+                { status: 400 }
+            );
+        }
+
+        const updatedStock = await updateStockQuantity(stockId, quantityToAdd, supabaseUserId);
         return NextResponse.json(updatedStock, { status: 200 });
     } catch (error) {
         console.error("Erreur lors de la mise à jour:", error);
         return NextResponse.json(
-            { error: "Erreur lors de la mise à jour du stock" },
+            { error: error instanceof Error ? error.message : "Erreur lors de la mise à jour du stock" },
             { status: 500 }
         );
     }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import { getUser } from "@/services/userService";
 
 interface Stock {
     id_stock: number;
@@ -71,12 +72,20 @@ export default function StockPage() {
 
     const handleAddStock = async (stockId: number, quantity: number) => {
         try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Non authentifié");
+            }
+
             const response = await fetch(`/api/stocks/${stockId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ quantityToAdd: quantity }),
+                body: JSON.stringify({
+                    quantityToAdd: quantity,
+                    supabaseUserId: supabaseUser.id
+                }),
             });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             fetchStocks();

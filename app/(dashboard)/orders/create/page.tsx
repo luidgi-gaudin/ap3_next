@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { FaTrash } from "react-icons/fa";
+import { getUser } from "@/services/userService";
 
 interface Stock {
     id_stock: number;
@@ -119,11 +120,23 @@ export default function NewOrderPage() {
         }
         setOrderLoading(true);
         try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Non authentifié");
+            }
+
             const response = await fetch("/api/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items: cart.map((item) => ({ id_stock: item.id_stock, quantite: item.quantite })) }),
+                body: JSON.stringify({
+                    items: cart.map((item) => ({
+                        id_stock: item.id_stock,
+                        quantite: item.quantite
+                    })),
+                    supabaseUserId: supabaseUser.id
+                }),
             });
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Erreur lors de la création de la commande");

@@ -21,23 +21,14 @@ interface Order {
 }
 
 interface Status {
-    id_statut: number;
+    id: number;
     name: string;
-}
-
-interface User {
-    id_utilisateur: number;
-    nom: string;
-    prenom: string;
-    email: string;
-    id_role: number;
-    role: { nom_role: string };
 }
 
 export default function OrderPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [statuses, setStatuses] = useState<Status[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("tous");
@@ -47,7 +38,8 @@ export default function OrderPage() {
         try {
             const supabaseUser = await getUser();
             if (!supabaseUser) {
-                throw new Error("Not authenticated");
+                router.push('/login');
+                return null;
             }
 
             const response = await fetch(`/api/utilisateurs?supabase_id=${supabaseUser.id}`);
@@ -58,75 +50,80 @@ export default function OrderPage() {
             return await response.json();
         } catch (error) {
             console.error("Error fetching user:", error);
-            throw error;
+            setError("Erreur lors de la récupération des données utilisateur");
+            return null;
         }
     };
 
     useEffect(() => {
-        const fetchOrders = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
                 const userData = await fetchUserData();
-                const response = await fetch("/api/orders");
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const json = await response.json();
 
-                const filteredOrders = userData?.id_role === 1
-                    ? json.orders
-                    : json.orders.filter((order: Order) => order.utilisateur.email === userData?.email)
+                if (!userData) return;
+
+                const [ordersResponse, statusesResponse] = await Promise.all([
+                    fetch("/api/orders"),
+                    fetch("/api/orders/statuses")
+                ]);
+
+                console.log(ordersResponse);
+                console.log(statusesResponse);
+
+                if (!ordersResponse.ok || !statusesResponse.ok) {
+                    throw new Error("Failed to fetch data");
+                }
+
+                const ordersData = await ordersResponse.json();
+                const statusesData = await statusesResponse.json();
+
+                const filteredOrders = userData.role.id_role === 1
+                    ? ordersData.orders
+                    : ordersData.orders.filter((order: Order) => order.utilisateur.email === userData.email);
+
                 setOrders(filteredOrders);
+                setStatuses(statusesData.statuses);
                 setError(null);
             } catch (err) {
-                console.error("Erreur lors de la récupération des commandes :", err);
-                setError("Erreur lors de la récupération des commandes");
+                console.error("Error fetching data:", err);
+                setError("Erreur lors de la récupération des données");
             } finally {
                 setLoading(false);
             }
         };
 
-        const fetchStatuses = async () => {
-            try {
-                const response = await fetch("/api/orders/statuses");
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const json = await response.json();
-                setStatuses(json.statuses);
-            } catch (err) {
-                console.error("Erreur lors de la récupération des statuts :", err);
-            }
-        };
-
-        fetchOrders();
-        fetchStatuses();
-    }, []);
+        fetchData();
+    }, [router]);
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
-            case "en attente":
-                return "bg-yellow-500";
-            case "en préparation":
-                return "bg-blue-500";
-            case "expédié":
-                return "bg-green-500";
-            case "terminée":
-                return "bg-gray-500";
-            case "annulée":
-                return "bg-red-500";
-            default:
-                return "bg-gray-500";
+            case "en attente": return "bg-yellow-500";
+            case "en préparation": return "bg-blue-500";
+            case "expédié": return "bg-green-500";
+            case "terminée": return "bg-gray-500";
+            case "annulée": return "bg-red-500";
+            default: return "bg-gray-500";
         }
     };
 
     const filteredOrders = orders.filter((order) => {
+        if (!order) return false;
+
         const matchesSearch =
             order.utilisateur.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.utilisateur.prenom.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.id_commande.toString().includes(searchQuery);
 
-        const matchesStatus = statusFilter === "tous" || order.statut_commande.name.toLowerCase() === statusFilter.toLowerCase();
+        const matchesStatus =
+            statusFilter === "tous" ||
+            order.statut_commande?.name.toLowerCase() === statusFilter.toLowerCase();
 
         return matchesSearch && matchesStatus;
     });
 
+    if (loading) return <div className="container mx-auto p-4">Chargement...</div>;
+    if (error) return <div className="container mx-auto p-4 text-red-500">{error}</div>;
 
     return (
         <div className="container mx-auto p-4">
@@ -145,9 +142,9 @@ export default function OrderPage() {
                             <SelectValue placeholder="Filtrer par statut" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem key="tous" value="tous">Tous</SelectItem>
+                            <SelectItem value="tous">Tous</SelectItem>
                             {statuses.map((status) => (
-                                <SelectItem key={status.id_statut} value={status.name}>
+                                <SelectItem key={status.id} value={status.name}>
                                     {status.name}
                                 </SelectItem>
                             ))}
@@ -158,36 +155,32 @@ export default function OrderPage() {
                     </Link>
                 </div>
             </div>
-            {loading && <p>Chargement...</p>}
-            {error && <p className="text-red-500">{error}</p>}
-            {!loading && filteredOrders.length === 0 && <p>Aucune commande trouvée.</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredOrders.map((order) => (
-                    <Card key={order.id_commande} className="relative">
-                        <CardHeader className="flex justify-between items-center">
-                            <CardTitle>Commande #{order.id_commande}</CardTitle>
-                            <span
-                                className={`px-3 py-1 text-xs font-bold text-white ${getStatusColor(
-                                    order.statut_commande.name
-                                )} rounded-full`}
-                            >
-                                {order.statut_commande.name}
-                            </span>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Date : {new Date(order.date_commande).toLocaleDateString()}</p>
-                            <p>
-                                Utilisateur : {order.utilisateur.prenom} {order.utilisateur.nom}
-                            </p>
-                        </CardContent>
-                        <CardFooter>
-                            <Button variant="outline" onClick={() => router.push(`/orders/${order.id_commande}`)}>
-                                Détails
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
+
+            {filteredOrders.length === 0 ? (
+                <p>Aucune commande trouvée.</p>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredOrders.map((order) => (
+                        <Card key={order.id_commande} className="relative">
+                            <CardHeader className="flex justify-between items-center">
+                                <CardTitle>Commande #{order.id_commande}</CardTitle>
+                                <span className={`px-3 py-1 text-xs font-bold text-white ${getStatusColor(order.statut_commande.name)} rounded-full`}>
+                                    {order.statut_commande.name}
+                                </span>
+                            </CardHeader>
+                            <CardContent>
+                                <p>Date : {new Date(order.date_commande).toLocaleDateString()}</p>
+                                <p>Utilisateur : {order.utilisateur.prenom} {order.utilisateur.nom}</p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button variant="outline" onClick={() => router.push(`/orders/${order.id_commande}`)}>
+                                    Détails
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

@@ -32,16 +32,23 @@ export async function PUT(
         const orderIdNum = parseInt(awaitedParams.orderId, 10);
         if (isNaN(orderIdNum))
             return NextResponse.json({ error: "Identifiant invalide" }, { status: 400 });
-        const { newStatus } = await request.json();
+        const { newStatus, supabaseUserId } = await request.json();
+        if (!supabaseUserId)
+            return NextResponse.json({ error: "Identifiant utilisateur requis" }, { status: 400 });
         if (![2, 3, 4, 5].includes(newStatus))
             return NextResponse.json({ error: "Nouveau statut invalide" }, { status: 400 });
-        const updatedOrder = await updateOrderStatus(orderIdNum, newStatus);
-        const serializedOrder = JSON.parse(JSON.stringify(updatedOrder, replacer));
-        return NextResponse.json({ order: serializedOrder }, { status: 200 });
-    } catch (error: unknown) {
+
+        const updatedOrder = await updateOrderStatus(orderIdNum, newStatus, supabaseUserId);
+        return NextResponse.json(
+            { order: updatedOrder },
+            { status: 200 }
+        );
+    } catch (error) {
         console.error("Erreur dans PUT /api/orders/[orderId]:", error);
-        const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "Erreur inconnue" },
+            { status: 500 }
+        );
     }
 }
 
@@ -54,15 +61,22 @@ export async function PATCH(
         const orderIdNum = parseInt(awaitedParams.orderId, 10);
         if (isNaN(orderIdNum))
             return NextResponse.json({ error: "Identifiant invalide" }, { status: 400 });
-        const { items } = await request.json();
+        const { items, supabaseUserId } = await request.json();
         if (!items || !Array.isArray(items))
             return NextResponse.json({ error: "Payload invalide" }, { status: 400 });
-        const updatedOrder = await modifyOrder(orderIdNum, items);
-        const serializedOrder = JSON.parse(JSON.stringify(updatedOrder, replacer));
-        return NextResponse.json({ order: serializedOrder }, { status: 200 });
-    } catch (error: unknown) {
+        if (!supabaseUserId)
+            return NextResponse.json({ error: "Identifiant utilisateur requis" }, { status: 400 });
+
+        const updatedOrder = await modifyOrder(orderIdNum, items, supabaseUserId);
+        return NextResponse.json(
+            { order: updatedOrder },
+            { status: 200 }
+        );
+    } catch (error) {
         console.error("Erreur dans PATCH /api/orders/[orderId]:", error);
-        const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-        return NextResponse.json({ error: errorMessage }, { status: 500 });
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : "Erreur inconnue" },
+            { status: 500 }
+        );
     }
 }

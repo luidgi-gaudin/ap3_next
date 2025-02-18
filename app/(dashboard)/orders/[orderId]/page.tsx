@@ -25,6 +25,7 @@ interface Utilisateur {
     nom: string;
     prenom: string;
     email: string;
+    id_role: number;
     role: { nom_role: string };
 }
 
@@ -151,10 +152,18 @@ export default function OrderDetailsPage() {
         const confirmed = window.confirm("Êtes-vous sûr de vouloir annuler la commande ?");
         if (!confirmed) return;
         try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Non authentifié");
+            }
+
             const res = await fetch(`/api/orders/${order.id_commande}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ newStatus: 5 }),
+                body: JSON.stringify({
+                    newStatus: 5,
+                    supabaseUserId: supabaseUser.id
+                }),
             });
             if (!res.ok) {
                 const json = await res.json();
@@ -225,13 +234,13 @@ export default function OrderDetailsPage() {
                             Modifier
                         </Button>
                     )}
-                    {((user?.role.nom_role === "Administrateur") ||
+                    {((user?.id_role === 1 && currentStatus.toLowerCase() !== "terminée" && currentStatus.toLowerCase() !== "annulée") ||
                         (currentStatus.toLowerCase() === "en attente")) && (
                         <Button variant="destructive" onClick={handleCancelOrder} type="button">
                             Annuler la commande
                         </Button>
                     )}
-                    {(nextStatus && user?.role.nom_role === "Administrateur") && (
+                    {(nextStatus && user?.id_role === 1) && (
                         <Button onClick={handleUpdateStatus} type="button">
                             {nextStatus.label}
                         </Button>

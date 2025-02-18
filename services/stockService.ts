@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import utilisateurService from "@/services/utilisateurService";
 
 export async function getStocksData() {
     const stocks = await prisma.stock.findMany({
@@ -20,36 +21,74 @@ export async function getStocksData() {
     ));
 }
 
-export async function updateStockQuantity(stockId: number, quantityToAdd: number) {
+export async function updateStockQuantity(stockId: number, quantityToAdd: number, supabaseUserId: string) {
     try {
-        const stock = await prisma.stock.findUnique({
-            where: { id_stock: stockId },
-        });
-
-        if (!stock) {
-            throw new Error("Stock non trouvé");
+        const utilisateur = await utilisateurService.getUtilisateurBySupabaseId(supabaseUserId);
+        if (!utilisateur) {
+            throw new Error("Utilisateur non trouvé");
         }
 
-        const updatedStock = await prisma.stock.update({
-            where: { id_stock: stockId },
-            data: {
-                quantite_disponible: stock.quantite_disponible + quantityToAdd,
-            },
-            include: { TypeStock: true },
-        });
+        return await prisma.$transaction(async (tx) => {
+            const stock = await tx.stock.findUnique({
+                where: { id_stock: stockId },
+            });
 
-        return JSON.parse(JSON.stringify(updatedStock, (_key, value) =>
-            typeof value === "bigint" ? value.toString() : value
-        ));
+            if (!stock) {
+                throw new Error("Stock non trouvé");
+            }
+
+            const updatedStock = await tx.stock.update({
+                where: { id_stock: stockId },
+                data: {
+                    quantite_disponible: stock.quantite_disponible + quantityToAdd,
+                },
+                include: { TypeStock: true },
+            });
+
+            await tx.mouvement.create({
+                data: {
+                    id_stock: stockId,
+                    type_mouvement: quantityToAdd > 0 ? "ajout manuel" : "retrait manuel",
+                    quantite: Math.abs(quantityToAdd),
+                    id_utilisateur: utilisateur.id_utilisateur,
+                },
+            });
+
+            return JSON.parse(JSON.stringify(updatedStock, (_key, value) =>
+                typeof value === "bigint" ? value.toString() : value
+            ));
+        });
     } catch (error) {
         console.error("Erreur lors de la mise à jour du stock :", error);
         throw error;
     }
 }
 
+export async function createStock(data: {
+    nom: string;
+    description: string;
+    id_type_stock: number;
+    quantite_disponible: number;
+}) {
+    try {
+        return await prisma.$transaction(async (tx) => {
+            const stock = await tx.stock.create({
+                data,
+                include: { TypeStock: true },
+            });
+
+            return JSON.parse(JSON.stringify(stock, (_key, value) =>
+                typeof value === "bigint" ? value.toString() : value
+            ));
+        });
+    } catch (error) {
+        console.error("Erreur lors de la création du stock:", error);
+        throw error;
+    }
+}
+
 export async function deleteStock(stockId: number) {
     try {
-        // Check if stock is linked to any orders
         const linkedOrders = await prisma.detailsCommande.findFirst({
             where: { id_stock: stockId },
         });
@@ -63,26 +102,6 @@ export async function deleteStock(stockId: number) {
         });
     } catch (error) {
         console.error("Erreur lors de la suppression du stock :", error);
-        throw error;
-    }
-}
-
-export async function createStock(data: {
-    nom: string;
-    description: string;
-    id_type_stock: number;
-    quantite_disponible: number;
-}) {
-    try {
-        const stock = await prisma.stock.create({
-            data,
-            include: { TypeStock: true },
-        });
-        return JSON.parse(JSON.stringify(stock, (_key, value) =>
-            typeof value === "bigint" ? value.toString() : value
-        ));
-    } catch (error) {
-        console.error("Erreur lors de la création du stock:", error);
         throw error;
     }
 }
