@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             quantite_disponible: 0,
         });
         return NextResponse.json({ stock: newStock }, { status: 201 });
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: "Erreur lors de la création du stock" },
             { status: 500 }
