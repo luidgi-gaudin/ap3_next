@@ -73,7 +73,7 @@ export default function OrderPage() {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
 
-                const filteredOrders = user?.role.nom_role.toLowerCase() === "administrateur"
+                const filteredOrders = user?.role.nom_role === "Administrateur"
                     ? json.orders
                     : json.orders.filter((order: Order) => order.utilisateur.email === user?.email);
 
