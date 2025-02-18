@@ -323,7 +323,7 @@ export default function DashboardPage() {
                                         <TableRow
                                             key={commande.id_commande}
                                             onClick={() =>
-                                                router.push(`/dashboard/orders/${commande.id_commande}`)
+                                                router.push(`/orders/${commande.id_commande}`)
                                             }
                                             className="cursor-pointer hover:cursor-pointer"
                                         >
