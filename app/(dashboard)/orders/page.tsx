@@ -30,6 +30,7 @@ interface User {
     nom: string;
     prenom: string;
     email: string;
+    id_role: number;
     role: { nom_role: string };
 }
 
@@ -73,7 +74,7 @@ export default function OrderPage() {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const json = await response.json();
 
-                const filteredOrders = user?.role.nom_role === "Administrateur"
+                const filteredOrders = user?.id_role === 1
                     ? json.orders
                     : json.orders.filter((order: Order) => order.utilisateur.email === user?.email);
 
