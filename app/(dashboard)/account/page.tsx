@@ -12,7 +12,6 @@ export default async function AccountPage() {
         redirect("/login");
     }
 
-    // Récupérer les informations utilisateur depuis Prisma
     const utilisateur = await UtilisateurService.getUtilisateurBySupabaseId(data.user.id);
 
     if (!utilisateur) {
