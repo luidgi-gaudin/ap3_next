@@ -15,7 +15,7 @@ import UtilisateurService from "@/services/utilisateurService";
 import {DashboardLinkButton} from "@/components/dashboard/layout/dashboardLinkButton";
 import {NavigationButton} from "@/components/dashboard/layout/navigationButton";
 
-import { Package, ClipboardList } from "lucide-react";
+import {Package, ClipboardList, MessageCircleQuestion} from "lucide-react";
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
@@ -56,6 +56,11 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         />
       </SidebarContent>
       <SidebarFooter>
+        <NavigationButton
+            path="/faq"
+            label="FAQ"
+            icon={<MessageCircleQuestion className="w-4 h-4" />}
+        />
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
