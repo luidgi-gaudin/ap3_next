@@ -101,6 +101,7 @@ type SignUpFormProps = {
     rolesError: string | null;
     isLoadingRole: boolean;
     onError: (message: string) => void;
+    setIsLogin: (value: boolean) => void;
 };
 
 const SignUpForm: React.FC<SignUpFormProps> = ({
@@ -110,6 +111,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    rolesError,
                                                    isLoadingRole,
                                                    onError,
+                                                   setIsLogin,
                                                }) => {
     const [passwordError, setPasswordError] = React.useState<string | null>(null);
 
@@ -139,14 +141,15 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
         validatePassword(password);
         if (!passwordError) {
             const result = await signup(formData);
-            if (result.error) {
+            if (result?.error) {
                 onError(result.error);
-            }else {
+            } else {
                 toast({
-                    title: "Succès",
-                    description: "Inscription réussie, vérifiez votre boite Mail pour confirmer votre compte.",
+                    title: "Compte créé avec succès",
+                    description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
                     variant: "default",
                 });
+                setIsLogin(true);
             }
         }
     };
@@ -331,6 +334,7 @@ export default function AuthPage() {
                                 rolesError={rolesError}
                                 isLoadingRole={isLoadingRole}
                                 onError={handleError}
+                                setIsLogin={setIsLogin}
                             />
                         )}
                     </AnimatePresence>
