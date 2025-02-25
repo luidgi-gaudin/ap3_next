@@ -10,7 +10,9 @@ import { Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { login, signup } from "@/app/(app)/login/actions";
 import Logo from "@/components/Login/Logo";
 import { Toaster } from "@/components/ui/toaster";
-import { toast } from "@/hooks/use-toast";
+import { useToast} from "@/hooks/use-toast";
+import {useSearchParams} from "next/navigation";
+import {useEffect} from "react";
 
 type Role = {
     id_role: number;
@@ -101,6 +103,7 @@ type SignUpFormProps = {
     rolesError: string | null;
     isLoadingRole: boolean;
     onError: (message: string) => void;
+    onSuccess: (message: string) => void;
     setIsLogin: (value: boolean) => void;
 };
 
@@ -111,7 +114,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    rolesError,
                                                    isLoadingRole,
                                                    onError,
-                                                   setIsLogin,
                                                }) => {
     const [passwordError, setPasswordError] = React.useState<string | null>(null);
 
@@ -136,21 +138,16 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const password = formData.get('password') as string;
-        validatePassword(password);
-        if (!passwordError) {
-            const result = await signup(formData);
+        const form = e.currentTarget;
+        const data = new FormData(form);
+        try {
+            const result = await signup(data);
             if (result?.error) {
                 onError(result.error);
-            } else {
-                toast({
-                    title: "Compte créé avec succès",
-                    description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
-                    variant: "default",
-                });
-                setIsLogin(true);
             }
+        } catch (error) {
+            console.error(error);
+            onError("Une erreur est survenue lors de l’inscription.");
         }
     };
 
@@ -267,6 +264,19 @@ export default function AuthPage() {
     const [roles, setRoles] = React.useState<Role[]>([]);
     const [isLoadingRole, setIsLoadingRole] = React.useState(true);
     const [rolesError, setRolesError] = React.useState<string | null>(null);
+    const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const success = searchParams.get('success');
+
+    useEffect(() => {
+        if (success === 'true') {
+            toast({
+                title: "Succès",
+                description: "Un email de confirmation vous a été envoyé. Veuillez vérifier votre boîte de réception.",
+                variant: "default",
+            });
+        }
+    }, [success, toast]);
 
     const togglePasswordVisibility = React.useCallback(() => {
         setShowPassword((prev) => !prev);
@@ -277,6 +287,14 @@ export default function AuthPage() {
             title: "Erreur",
             description: message,
             variant: "destructive",
+        });
+    };
+
+    const handleSuccess = (message: string) => {
+        toast({
+            title: "Succès",
+            description: message,
+            variant: "default",
         });
     };
 
@@ -334,6 +352,7 @@ export default function AuthPage() {
                                 rolesError={rolesError}
                                 isLoadingRole={isLoadingRole}
                                 onError={handleError}
+                                onSuccess={handleSuccess}
                                 setIsLogin={setIsLogin}
                             />
                         )}

@@ -64,7 +64,7 @@ export async function signup(formData: FormData) {
         return { error: "Un compte existe déja avec cette adresse mail" };
     }
     revalidatePath('/login', 'layout');
-    redirect('/login');
+    redirect('/login?success=true');
 
     return { error: null };
 }
