@@ -61,9 +61,8 @@ export async function signup(formData: FormData) {
     try {
         await UtilisateurService.CreateUtilisateur(utilisateurData);
     } catch {
-        return { error: "Erreur lors de la création de l'utilisateur dans Prisma." };
+        return { error: "Un compte existe déja avec cette adresse mail" };
     }
-
     revalidatePath('/login', 'layout');
     redirect('/login');
 

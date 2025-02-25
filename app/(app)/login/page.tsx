@@ -141,6 +141,12 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
             const result = await signup(formData);
             if (result.error) {
                 onError(result.error);
+            }else {
+                toast({
+                    title: "Succès",
+                    description: "Inscription réussie, vérifiez votre boite Mail pour confirmer votre compte.",
+                    variant: "default",
+                });
             }
         }
     };
