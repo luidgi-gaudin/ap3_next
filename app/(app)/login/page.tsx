@@ -14,11 +14,6 @@ import { useToast} from "@/hooks/use-toast";
 import {useSearchParams} from "next/navigation";
 import {Suspense, useEffect} from "react";
 
-type Role = {
-    id_role: number;
-    nom_role: string;
-};
-
 type LoginFormProps = {
     showPassword: boolean;
     togglePasswordVisibility: () => void;
