@@ -12,7 +12,7 @@ import Logo from "@/components/Login/Logo";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast} from "@/hooks/use-toast";
 import {useSearchParams} from "next/navigation";
-import {useEffect} from "react";
+import {Suspense, useEffect} from "react";
 
 type Role = {
     id_role: number;
@@ -258,7 +258,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
     );
 };
 
-export default function AuthPage() {
+function AuthPageContent() {
     const [isLogin, setIsLogin] = React.useState(true);
     const [showPassword, setShowPassword] = React.useState(false);
     const [roles, setRoles] = React.useState<Role[]>([]);
@@ -361,4 +361,12 @@ export default function AuthPage() {
             </Card>
         </div>
     );
+}
+
+export default function AuthPage(){
+    return(
+        <Suspense fallback={<div>chargement</div>}>
+            <AuthPageContent />
+        </Suspense>
+    )
 }
