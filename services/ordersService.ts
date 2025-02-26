@@ -197,12 +197,12 @@ export async function modifyOrder(orderId: number, items: { id_stock: number; qu
             });
         }
 
-            return await tx.commande.findUnique({
-                where: { id_commande: orderId },
+            return tx.commande.findUnique({
+                where: {id_commande: orderId},
                 include: {
                     statut_commande: true,
                     utilisateur: true,
-                    details_commande: { include: { stock: true } },
+                    details_commande: {include: {stock: true}},
                 },
             });
         });
