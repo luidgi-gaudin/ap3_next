@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { getUser } from "@/services/userService";
+import {Utilisateur} from "@prisma/client";
 
 interface Stock {
     id_stock: number;
@@ -25,6 +26,7 @@ export default function StockPage() {
     const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
     const [quantityToAdd, setQuantityToAdd] = useState<number>(0);
     const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
+    const [user, setUser] = useState<Utilisateur | null>(null);
     const router = useRouter();
 
     const handleDeleteStock = async (stockId: number) => {
@@ -94,6 +96,35 @@ export default function StockPage() {
             console.error("Erreur lors de l'ajout du stock :", err);
         }
     };
+   useEffect(() => {
+       const fetchUser = async () => {
+           const userData = await fetchUserData();
+           setUser(userData);
+       };
+
+       fetchUser();
+   }, []);
+
+    const fetchUserData = async () => {
+        try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                router.push('/login');
+                return null;
+            }
+
+            const response = await fetch(`/api/utilisateurs?supabase_id=${supabaseUser.id}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user data");
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            setError("Erreur lors de la récupération des données utilisateur");
+            return null;
+        }
+    };
 
 
     return (
@@ -101,7 +132,7 @@ export default function StockPage() {
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                 <h1 className="text-3xl font-bold mb-4 md:mb-0">Stock</h1>
                 <div className="flex items-center space-x-4">
-                        <Button onClick={() => (router.push("/stock/add"))}>Créer un produit</Button>
+                    <Button onClick={() => (router.push("/stock/add"))}>Créer un produit</Button>
                 </div>
             </div>
             <Input
@@ -119,7 +150,9 @@ export default function StockPage() {
                         <TableHead>Description</TableHead>
                         <TableHead>Type de stock</TableHead>
                         <TableHead>Quantité disponible</TableHead>
+                        {user?.id_role === 1 && (
                         <TableHead>Actions</TableHead>
+                            )}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -144,24 +177,32 @@ export default function StockPage() {
                                 <TableCell>{stock.description}</TableCell>
                                 <TableCell>{stock.TypeStock.nom_type}</TableCell>
                                 <TableCell>{stock.quantite_disponible}</TableCell>
-                                <TableCell>
-                                    <div className="flex gap-2">
-                                        <Button variant="outline" onClick={() => {
-                                            setSelectedStock(stock);
-                                            setIsPopupOpen(true);
-                                        }}>
-                                            Ajouter du stock
-                                        </Button>
-                                        {stock.canDelete && (
-                                            <Button
-                                                variant="destructive"
-                                                onClick={() => handleDeleteStock(stock.id_stock)}
-                                            >
-                                                Supprimer
-                                            </Button>
-                                        )}
-                                    </div>
-                                </TableCell>
+                                {user?.id_role === 1 && (
+                                    <TableCell>
+                                        <div className="flex gap-2">
+                                            <>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setSelectedStock(stock);
+                                                        setIsPopupOpen(true);
+                                                    }}
+                                                >
+                                                    Ajouter du stock
+                                                </Button>
+
+                                                {stock.canDelete && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        onClick={() => handleDeleteStock(stock.id_stock)}
+                                                    >
+                                                        Supprimer
+                                                    </Button>
+                                                )}
+                                            </>
+                                        </div>
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))
                     )}

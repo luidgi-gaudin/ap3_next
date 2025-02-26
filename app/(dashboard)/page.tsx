@@ -34,6 +34,8 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import {getUser} from "@/services/userService";
+import {Utilisateur} from "@prisma/client";
 
 type DashboardData = {
     ordersByDay: { day: string; count: number }[];
@@ -106,7 +108,39 @@ export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [user, setUser] = useState<Utilisateur | null>(null);
     const router = useRouter();
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userData = await fetchUserData();
+            setUser(userData);
+        };
+
+        fetchUser();
+    }, []);
+
+    const fetchUserData = async () => {
+        try {
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                router.push('/login');
+                return null;
+            }
+
+            const response = await fetch(`/api/utilisateurs?supabase_id=${supabaseUser.id}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user data");
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            setError("Erreur lors de la récupération des données utilisateur");
+            return null;
+        }
+    };
+
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -284,7 +318,7 @@ export default function DashboardPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {data.lastMovements.map((mouvement) => (
-                                        <TableRow key={mouvement.id_mouvement} className="cursor-pointer hover:cursor-pointer">
+                                        <TableRow key={mouvement.id_mouvement} >
                                             <TableCell>{mouvement.stock ? mouvement.stock.nom : "-"}</TableCell>
                                             <TableCell>{mouvement.type_mouvement}</TableCell>
                                             <TableCell>{mouvement.quantite}</TableCell>
@@ -309,10 +343,10 @@ export default function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
-                            <Table>
+                           <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>ID Commande</TableHead>
+                                        {user?.id_role === 1 && <TableHead>ID Commande</TableHead>}
                                         <TableHead>Utilisateur</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Statut</TableHead>
@@ -322,12 +356,12 @@ export default function DashboardPage() {
                                     {data.lastOrders.map((commande) => (
                                         <TableRow
                                             key={commande.id_commande}
-                                            onClick={() =>
-                                                router.push(`/orders/${commande.id_commande}`)
-                                            }
-                                            className="cursor-pointer hover:cursor-pointer"
+                                            onClick={() => user?.id_role === 1 ? router.push(`/orders/${commande.id_commande}`) : undefined}
+                                            className={user?.id_role === 1 ? "cursor-pointer hover:cursor-pointer" : ""}
                                         >
-                                            <TableCell>{commande.id_commande}</TableCell>
+                                            {user?.id_role === 1 && (
+                                                <TableCell>{commande.id_commande}</TableCell>
+                                            )}
                                             <TableCell>
                                                 {commande.utilisateur
                                                     ? `${commande.utilisateur.nom} ${commande.utilisateur.prenom}`
@@ -343,8 +377,8 @@ export default function DashboardPage() {
                                                             getStatusColor(commande.statut_commande.name)
                                                         }`}
                                                     >
-                            {commande.statut_commande.name}
-                          </span>
+                                                        {commande.statut_commande.name}
+                                                    </span>
                                                 ) : (
                                                     "-"
                                                 )}

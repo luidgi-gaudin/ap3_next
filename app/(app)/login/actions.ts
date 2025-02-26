@@ -36,9 +36,8 @@ export async function signup(formData: FormData) {
     const password = formData.get('password') as string | null;
     const prenom = formData.get('firstName') as string | null;
     const nom = formData.get('lastName') as string | null;
-    const id_role = formData.get('role') as string | null;
 
-    if (!email || !password || !prenom || !nom || !id_role) {
+    if (!email || !password || !prenom || !nom ) {
         return { error: "Veuillez remplir tous les champs." };
     }
 
@@ -55,7 +54,7 @@ export async function signup(formData: FormData) {
         prenom,
         nom,
         supabase_id: userId,
-        id_role: parseInt(id_role),
+        id_role: 2,
     };
 
     try {

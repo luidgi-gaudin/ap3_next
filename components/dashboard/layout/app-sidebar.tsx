@@ -15,7 +15,7 @@ import UtilisateurService from "@/services/utilisateurService";
 import {DashboardLinkButton} from "@/components/dashboard/layout/dashboardLinkButton";
 import {NavigationButton} from "@/components/dashboard/layout/navigationButton";
 
-import {Package, ClipboardList, MessageCircleQuestion} from "lucide-react";
+import {Package, ClipboardList, MessageCircleQuestion, BadgeCheck} from "lucide-react";
 
 export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
@@ -56,6 +56,13 @@ export async function AppSidebar({ ...props }: React.ComponentProps<typeof Sideb
         />
       </SidebarContent>
       <SidebarFooter>
+        {(utilisateur?.role.nom_role === 'Administrateur') && (
+        <NavigationButton
+            path="/upgrade-admin"
+            label="Promouvoir Admin"
+            icon={<BadgeCheck className="w-4 h-4" />}
+        />
+        )}
         <NavigationButton
             path="/faq"
             label="FAQ"

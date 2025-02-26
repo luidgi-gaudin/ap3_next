@@ -32,6 +32,25 @@ class UtilisateurService {
         }
     }
 
+    async getAllUtilisateurs() {
+        return prisma.utilisateur.findMany({
+            include: { role: true }
+        });
+    }
+
+    async updateUtilisateurRole(supabase_id: string, id_role: number) {
+        try {
+            return await prisma.utilisateur.update({
+                where: { supabase_id },
+                data: { id_role },
+                include: { role: true }
+            });
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour du rôle :", error);
+            throw new Error("Impossible de mettre à jour le rôle.");
+        }
+    }
+
 }
 
 export default new UtilisateurService();

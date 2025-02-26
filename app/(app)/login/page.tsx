@@ -99,9 +99,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ showPassword, togglePasswordVisib
 type SignUpFormProps = {
     showPassword: boolean;
     togglePasswordVisibility: () => void;
-    roles: Role[];
-    rolesError: string | null;
-    isLoadingRole: boolean;
     onError: (message: string) => void;
     onSuccess: (message: string) => void;
     setIsLogin: (value: boolean) => void;
@@ -110,9 +107,6 @@ type SignUpFormProps = {
 const SignUpForm: React.FC<SignUpFormProps> = ({
                                                    showPassword,
                                                    togglePasswordVisibility,
-                                                   roles,
-                                                   rolesError,
-                                                   isLoadingRole,
                                                    onError,
                                                }) => {
     const [passwordError, setPasswordError] = React.useState<string | null>(null);
@@ -180,33 +174,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
                     <Input id="lastName" name="lastName" type="text" placeholder="Dupont" className="pl-8" required />
                 </div>
             </div>
-
-            <div className="mb-4">
-                <Label htmlFor="role" className="text-sm font-medium ">
-                    Rôle
-                </Label>
-                <div className="relative mt-1">
-                    {isLoadingRole ? (
-                        <p className="text-sm ">Chargement des rôles…</p>
-                    ) : rolesError ? (
-                        <p className="text-sm text-red-500">{rolesError}</p>
-                    ) : (
-                        <select
-                            id="role"
-                            name="role"
-                            required
-                            className="w-full rounded-md border border-gray-300 py-2 pl-3 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                        >
-                            {roles.map((role) => (
-                                <option key={role.id_role} value={role.id_role}>
-                                    {role.nom_role}
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-            </div>
-
             <div className="mb-4">
                 <Label htmlFor="emailSignup" className="text-sm font-medium">
                     Adresse e-mail
@@ -261,9 +228,6 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
 function AuthPageContent() {
     const [isLogin, setIsLogin] = React.useState(true);
     const [showPassword, setShowPassword] = React.useState(false);
-    const [roles, setRoles] = React.useState<Role[]>([]);
-    const [isLoadingRole, setIsLoadingRole] = React.useState(true);
-    const [rolesError, setRolesError] = React.useState<string | null>(null);
     const { toast } = useToast();
     const searchParams = useSearchParams();
     const success = searchParams.get('success');
@@ -298,27 +262,6 @@ function AuthPageContent() {
         });
     };
 
-    React.useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                setIsLoadingRole(true);
-                const response = await fetch("/api/roles");
-                if (!response.ok) {
-                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                setRoles(Array.isArray(data.roles) ? data.roles : []);
-                setRolesError(null);
-            } catch (error) {
-                console.error("Erreur lors du chargement des rôles :", error);
-                setRolesError("Erreur lors du chargement des rôles");
-            } finally {
-                setIsLoadingRole(false);
-            }
-        };
-        fetchRoles();
-    }, []);
-
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b bg-muted px-4">
             <Toaster />
@@ -348,9 +291,6 @@ function AuthPageContent() {
                             <SignUpForm
                                 showPassword={showPassword}
                                 togglePasswordVisibility={togglePasswordVisibility}
-                                roles={roles}
-                                rolesError={rolesError}
-                                isLoadingRole={isLoadingRole}
                                 onError={handleError}
                                 onSuccess={handleSuccess}
                                 setIsLogin={setIsLogin}
