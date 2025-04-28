@@ -33,8 +33,6 @@ export async function PUT(
         if (isNaN(orderIdNum))
             return NextResponse.json({ error: "Identifiant invalide" }, { status: 400 });
         const { newStatus, supabaseUserId } = await request.json();
-        if (!supabaseUserId)
-            return NextResponse.json({ error: "Identifiant utilisateur requis" }, { status: 400 });
         if (![2, 3, 4, 5].includes(newStatus))
             return NextResponse.json({ error: "Nouveau statut invalide" }, { status: 400 });
 
