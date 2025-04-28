@@ -126,10 +126,15 @@ export default function OrderDetailsPage() {
             return;
         }
         try {
+            // Retrieve the authenticated user to pass the supabaseUserId
+            const supabaseUser = await getUser();
+            if (!supabaseUser) {
+                throw new Error("Non authentifié");
+            }
             const res = await fetch(`/api/orders/${order.id_commande}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ newStatus: nextStatus.next }),
+                body: JSON.stringify({ newStatus: nextStatus.next, supabaseUserId: supabaseUser.id }),
             });
             if (!res.ok) {
                 const json = await res.json();
